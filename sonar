@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Update system
+sudo dnf update -y
+
+# Install Java 17
+sudo dnf install -y java-17-amazon-corretto wget unzip
+
+# Verify Java
+java -version
+
+# Move to /opt
+cd /opt || exit
+
+# Download SonarQube 9.9 LTS
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.8.100196.zip
+
+# Extract
+unzip sonarqube-9.9.8.100196.zip
+
+# Create Sonar user/group
+groupadd sonar
+useradd -c "SonarQube User" -d /opt/sonarqube-9.9.8.100196 -g sonar -s /bin/bash sonar
+
+# Set ownership
+chown -R sonar:sonar /opt/sonarqube-9.9.8.100196
+
+# Configure SonarQube to run as sonar user
+echo 'RUN_AS_USER=sonar' > /opt/sonarqube-9.9.8.100196/bin/linux-x86-64/sonar.rc
+
+# Kernel settings
+cat <<EOF >/etc/sysctl.d/99-sonarqube.conf
+vm.max_map_count=524288
+fs.file-max=131072
+EOF
+
+sysctl --system
+
+# Limits
+cat <<EOF >/etc/security/limits.d/99-sonarqube.conf
+sonar   -   nofile   131072
+sonar   -   nproc    8192
+EOF
+
+# Create systemd service
+cat <<EOF >/etc/systemd/system/sonarqube.service
+[Unit]
+Description=SonarQube Service
+After=network.target
+
+[Service]
+Type=forking
+User=sonar
+Group=sonar
+
+ExecStart=/opt/sonarqube-9.9.8.100196/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube-9.9.8.100196/bin/linux-x86-64/sonar.sh stop
+
+Restart=always
+LimitNOFILE=131072
+LimitNPROC=8192
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd
+systemctl daemon-reload
+
+# Enable service
+systemctl enable sonarqube
+
+# Start service
+systemctl start sonarqube
+
+# Check status
+systemctl status sonarqube
+
+touch /userdata.complete
