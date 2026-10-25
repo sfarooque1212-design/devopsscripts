@@ -43,6 +43,7 @@ vi /opt/nexus/bin/nexus.vmoptions
 -Xmx1024m
 -XX:MaxDirectMemorySize=1024m
 
+-XX:+UnlockDiagnosticVMOptions
 -XX:LogFile=./sonatype-work/nexus3/log/jvm.log
 -XX:-OmitStackTraceInFastThrow
 -Djava.net.preferIPv4Stack=true
