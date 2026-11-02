@@ -43,6 +43,7 @@ vi /opt/nexus/bin/nexus.vmoptions
 -Xmx1024m
 -XX:MaxDirectMemorySize=1024m
 
+-XX:+UnlockDiagnosticVMOptions
 -XX:LogFile=./sonatype-work/nexus3/log/jvm.log
 -XX:-OmitStackTraceInFastThrow
 -Djava.net.preferIPv4Stack=true
@@ -52,7 +53,8 @@ vi /opt/nexus/bin/nexus.vmoptions
 -Djava.util.logging.config.file=/etc/karaf/java.util.logging.properties
 -Dkaraf.data=./sonatype-work/nexus3
 -Dkaraf.log=./sonatype-work/nexus3/log
--Djava.io.tmpdir=./sonatype-work/nexus3/tmp 
+-Djava.io.tmpdir=./sonatype-work/nexus3/tmp
+
 
 ##To run nexus as service using Systemd
 sudo vi /etc/systemd/system/nexus.service
